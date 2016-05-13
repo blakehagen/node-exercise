@@ -56,26 +56,24 @@ module.exports = {
 
         if (req.query.sort === 'mass') {
           chars = _.sortBy(chars, (o) => {
-            o.mass = parseFloat(o.mass.replace(',',''));
+            o.mass   = parseFloat(o.mass.replace(',', ''));
             o.height = parseFloat(o.height);
-
             return o.mass;
           });
 
         } else if (req.query.sort === 'height') {
           chars = _.sortBy(chars, (o) => {
-            o.mass = parseFloat(o.mass.replace(',',''));
+            o.mass   = parseFloat(o.mass.replace(',', ''));
             o.height = parseFloat(o.height);
             return o.height;
           });
         } else {
           chars = _.sortBy(chars, (o) => {
-            o.mass = parseFloat(o.mass.replace(',',''));
+            o.mass   = parseFloat(o.mass.replace(',', ''));
             o.height = parseFloat(o.height);
             return o.name;
           });
         }
-        // console.log('chars: ', chars);
 
         res.json(chars);
       })
