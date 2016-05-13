@@ -43,11 +43,11 @@ module.exports = {
       uri: 'http://swapi.co/api/people/?limit=10&page='
     };
 
-    Promise.map(_.range(1, 6), function (pageNum) {
+    Promise.map(_.range(1, 6), (pageNum) => {
       let options = _.cloneDeep(BASE_OPTIONS);
       options.uri = options.uri + pageNum;
       return BRequest(options);
-    }).then(function (results) {
+    }).then( (results) => {
 
         let chars = _.reduce(results, (aggregatedChars, responsePage) => {
 
