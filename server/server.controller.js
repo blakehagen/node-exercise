@@ -1,9 +1,9 @@
 'use strict';
-const rp      = require('request-promise');
-const _       = require('lodash');
-const request = require('request');
-const Promise = require('bluebird');
-const BRequest  = Promise.promisify(request);
+const rp       = require('request-promise');
+const _        = require('lodash');
+const request  = require('request');
+const Promise  = require('bluebird');
+const BRequest = Promise.promisify(request);
 
 module.exports = {
 
@@ -111,7 +111,7 @@ module.exports = {
         for (let p in planets) {
           reqNumber = reqNumber + planets[p].length;
         }
-      
+
         let counter = 0;
         for (let planet in planets) {
           if (!_.isEmpty(planets[planet])) {
@@ -134,7 +134,7 @@ module.exports = {
           }
         }
 
-        let checkIfDone = setInterval( () => {
+        let checkIfDone = setInterval(() => {
           if (counter === reqNumber) {
             res.json(planets);
             clearInterval(checkIfDone)
