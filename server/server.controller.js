@@ -96,8 +96,8 @@ module.exports = {
       return BRequest(options);
     }).then((results) => {
 
-        let temp = _.reduce(results, (aggregatedChars, responsePage) => {
-          return aggregatedChars.concat(JSON.parse(responsePage.body).results)
+        let temp = _.reduce(results, (aggregatedPlanets, responsePage) => {
+          return aggregatedPlanets.concat(JSON.parse(responsePage.body).results)
         }, []);
 
         let planets = {};
