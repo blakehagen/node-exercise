@@ -3,7 +3,7 @@ const rp      = require('request-promise');
 const _       = require('lodash');
 const request = require('request');
 const Promise = require('bluebird');
-var BRequest  = Promise.promisify(request);
+const BRequest  = Promise.promisify(request);
 
 module.exports = {
 
@@ -47,7 +47,7 @@ module.exports = {
       let options = _.cloneDeep(BASE_OPTIONS);
       options.uri = options.uri + pageNum;
       return BRequest(options);
-    }).then( (results) => {
+    }).then((results) => {
 
         let chars = _.reduce(results, (aggregatedChars, responsePage) => {
 
@@ -85,19 +85,66 @@ module.exports = {
   // GET PLANETS AND RESPECTIVE RESIDENTS //
   getPlanetResidents: (req, res) => {
 
-    let options = {
-      uri: 'http://swapi.co/api/planets/',
-      json: true
+    const BASE_OPTIONS = {
+      method: 'GET',
+      uri: 'http://swapi.co/api/planets/?limit=10&page='
     };
 
-    rp(options).then((data) => {
-        console.log(data.results);
+    Promise.map(_.range(1, 8), (pageNum) => {
+      let options = _.cloneDeep(BASE_OPTIONS);
+      options.uri = options.uri + pageNum;
+      return BRequest(options);
+    }).then((results) => {
+
+        let temp = _.reduce(results, (aggregatedChars, responsePage) => {
+          return aggregatedChars.concat(JSON.parse(responsePage.body).results)
+        }, []);
+
+        let planets = {};
+        for (let i = 0; i < temp.length; i++) {
+          planets[temp[i].name] = temp[i].residents;
+          temp.splice(i, 1);
+          i--;
+        }
+
+        let reqNumber = 0;
+        for (let p in planets) {
+          reqNumber = reqNumber + planets[p].length;
+        }
+      
+        let counter = 0;
+        for (let planet in planets) {
+          if (!_.isEmpty(planets[planet])) {
+            planets[planet].map((uri)=> {
+              rp({method: 'GET', uri: uri}).then((response) => {
+                let name = (JSON.parse(response).name);
+                counter++;
+                let substr = 'http';
+                for (let i = 0; i < planets[planet].length; i++) {
+                  if (planets[planet][i].indexOf(substr) > -1) {
+                    planets[planet].splice(i, 1);
+                    i--;
+                  }
+                }
+                planets[planet].push(name);
+              })
+            });
+          } else {
+            planets[planet] = 'No known residents'
+          }
+        }
+
+        let checkIfDone = setInterval(() => {
+          if (counter === reqNumber) {
+            res.json(planets);
+            clearInterval(checkIfDone)
+          }
+        }, 1000);
+
       })
       .catch((err) => {
         res.status(500).json(err);
       });
-
-
   }
 
 
