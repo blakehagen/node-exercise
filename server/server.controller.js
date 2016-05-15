@@ -134,7 +134,7 @@ module.exports = {
           }
         }
 
-        let checkIfDone = setInterval(() => {
+        let checkIfDone = setInterval( () => {
           if (counter === reqNumber) {
             res.json(planets);
             clearInterval(checkIfDone)
