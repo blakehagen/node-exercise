@@ -100,46 +100,28 @@ module.exports = {
           return aggregatedPlanets.concat(JSON.parse(responsePage.body).results)
         }, []);
 
-        let planets = {};
-        for (let i = 0; i < temp.length; i++) {
-          planets[temp[i].name] = temp[i].residents;
-          temp.splice(i, 1);
-          i--;
-        }
+        let planets = _.reduce(temp, (tempPlanetInfo, currPlanet) => {
+          tempPlanetInfo[currPlanet.name] = currPlanet.residents;
+          return tempPlanetInfo;
+        }, {});
 
-        let reqNumber = 0;
-        for (let p in planets) {
-          reqNumber = reqNumber + planets[p].length;
-        }
+        BPromise.map(_.keys(planets), planet => {
 
-        let counter = 0;
-        for (let planet in planets) {
-          if (!_.isEmpty(planets[planet])) {
-            planets[planet].map((uri)=> {
-              rp({method: 'GET', uri: uri}).then((response) => {
-                let name = (JSON.parse(response).name);
-                counter++;
-                let substr = 'http';
-                for (let i = 0; i < planets[planet].length; i++) {
-                  if (planets[planet][i].indexOf(substr) > -1) {
-                    planets[planet].splice(i, 1);
-                    i--;
-                  }
-                }
-                planets[planet].push(name);
+            let residentUrls = planets[planet] || [];
+
+            return BPromise.map(residentUrls, url => {
+                return rp({method: 'GET', url});
               })
-            });
-          } else {
-            planets[planet] = 'No known residents'
-          }
-        }
-
-        let checkIfDone = setInterval(() => {
-          if (counter === reqNumber) {
+              .then(allResponses => {
+                planets[planet] = _.map(allResponses, response => {
+                    return JSON.parse(response.body).name;
+                  }) || 'No residents';
+              });
+          
+          })
+          .then(() => {
             res.json(planets);
-            clearInterval(checkIfDone)
-          }
-        }, 1000);
+          });
 
       })
       .catch((err) => {
